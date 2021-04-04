@@ -252,5 +252,7 @@ if __name__ == '__main__':
             key = obj.key
             print(key)
             body = obj.get()['Body'].read()
-            print(body)
+            if key.endswith('.mp4') or key.endswith('.avi'):
+                test_full_image_network(**vars(args))
+            # print(body)
             break
