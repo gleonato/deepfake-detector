@@ -245,7 +245,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     print('Starting: {}'.format(key))
 
     # Read and write
-    reader = cv2.VideoCapture(key)
+    reader = cv2.VideoCapture(body)
     print(reader)
 
     video_fn = key
@@ -276,7 +276,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
 
     # Frame numbers and length of output video
     frame_num = 0
-    # assert start_frame < num_frames - 1
+    assert start_frame < num_frames - 1
     end_frame = end_frame if end_frame else num_frames
     pbar = tqdm(total=end_frame-start_frame)
 
