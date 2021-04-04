@@ -17,6 +17,7 @@ import cv2
 import dlib
 import torch
 import torch.nn as nn
+import boto3
 from PIL import Image as pil_image
 from tqdm import tqdm
 
@@ -221,6 +222,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('--video_path', '-i', type=str)
+    p.add_argument('--s3_bucket', '-s3', type=str)
     p.add_argument('--model_path', '-mi', type=str, default=None)
     p.add_argument('--output_path', '-o', type=str,
                    default='.')
@@ -229,11 +231,24 @@ if __name__ == '__main__':
     p.add_argument('--cuda', action='store_true')
     args = p.parse_args()
 
-    video_path = args.video_path
-    if video_path.endswith('.mp4') or video_path.endswith('.avi'):
-        test_full_image_network(**vars(args))
-    else:
-        videos = os.listdir(video_path)
-        for video in videos:
-            args.video_path = join(video_path, video)
+    s3_bucket = args.s3_bucket
+    if s3_bucket is null:
+        video_path = args.video_path
+        if video_path.endswith('.mp4') or video_path.endswith('.avi'):
             test_full_image_network(**vars(args))
+        else:
+            videos = os.listdir(video_path)
+            for video in videos:
+                args.video_path = join(video_path, video)
+                test_full_image_network(**vars(args))
+    else:
+        s3 = boto3.resource('s3')
+        # bucket = s3.Bucket('raw-videos-gleonato/datasets/dfdc/deepfake-detection-challenge/test_videos/')
+        bucket = s3.Bucket(s3_bucket)
+
+        for obj in bucket.objects.all():
+            key = obj.key
+            print(key)
+            body = obj.get()['Body'].read()
+            print(body)
+            break
