@@ -258,7 +258,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     face_detector = dlib.get_frontal_face_detector()
 
     # Load model
-    print('Model Path: {}').format(model_path)
+    print('Model Path: {}'.format(model_path))
     model, *_ = model_selection(modelname='xception', num_out_classes=2)
     if model_path is not None:
         model = torch.load(model_path)
