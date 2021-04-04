@@ -217,6 +217,130 @@ def test_full_image_network(video_path, model_path, output_path,
     else:
         print('Input video file was empty')
 
+def test_full_image_network2(s3_bucket, model_path, output_path,
+                            start_frame=0, end_frame=None, cuda=True):
+    """
+    Reads a video and evaluates a subset of frames with the a detection network
+    that takes in a full frame. Outputs are only given if a face is present
+    and the face is highlighted using dlib.
+    :param video_path: path to video file
+    :param model_path: path to model file (should expect the full sized image)
+    :param output_path: path where the output video is stored
+    :param start_frame: first frame to evaluate
+    :param end_frame: last frame to evaluate
+    :param cuda: enable cuda
+    :return:
+    """
+    print('Reading from S3 remotely...')
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(s3_bucket)
+    for obj in bucket.objects.all():
+        key = obj.key
+        print(key)
+        body = obj.get()['Body'].read()
+        # print(body)
+
+
+    print('Starting: {}'.format(key))
+
+    # Read and write
+    reader = cv2.VideoCapture(key)
+
+    video_fn = key
+    os.makedirs(output_path, exist_ok=True)
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    fps = reader.get(cv2.CAP_PROP_FPS)
+    num_frames = int(reader.get(cv2.CAP_PROP_FRAME_COUNT))
+    writer = None
+
+    # Face detector
+    face_detector = dlib.get_frontal_face_detector()
+
+    # Load model
+    model, *_ = model_selection(modelname='xception', num_out_classes=2)
+    if model_path is not None:
+        model = torch.load(model_path)
+        print('Model found in {}'.format(model_path))
+    else:
+        print('No model found, initializing random model.')
+    if cuda:
+        model = model.cuda()
+
+    # Text variables
+    font_face = cv2.FONT_HERSHEY_SIMPLEX
+    thickness = 2
+    font_scale = 1
+
+    # Frame numbers and length of output video
+    frame_num = 0
+    assert start_frame < num_frames - 1
+    end_frame = end_frame if end_frame else num_frames
+    pbar = tqdm(total=end_frame-start_frame)
+
+    while reader.isOpened():
+        _, image = reader.read()
+        if image is None:
+            break
+        frame_num += 1
+
+        if frame_num < start_frame:
+            continue
+        pbar.update(1)
+
+        # Image size
+        height, width = image.shape[:2]
+
+        # Init output writer
+        if writer is None:
+            writer = cv2.VideoWriter(join(output_path, video_fn), fourcc, fps,
+                                     (height, width)[::-1])
+
+        # 2. Detect with dlib
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        faces = face_detector(gray, 1)
+        if len(faces):
+            # For now only take biggest face
+            face = faces[0]
+
+            # --- Prediction ---------------------------------------------------
+            # Face crop with dlib and bounding box scale enlargement
+            x, y, size = get_boundingbox(face, width, height)
+            cropped_face = image[y:y+size, x:x+size]
+
+            # Actual prediction using our model
+            prediction, output = predict_with_model(cropped_face, model,
+                                                    cuda=cuda)
+            # ------------------------------------------------------------------
+
+            # Text and bb
+            x = face.left()
+            y = face.top()
+            w = face.right() - x
+            h = face.bottom() - y
+            label = 'fake' if prediction == 1 else 'real'
+            color = (0, 255, 0) if prediction == 0 else (0, 0, 255)
+            output_list = ['{0:.2f}'.format(float(x)) for x in
+                           output.detach().cpu().numpy()[0]]
+            cv2.putText(image, str(output_list)+'=>'+label, (x, y+h+30),
+                        font_face, font_scale,
+                        color, thickness, 2)
+            # draw box over face
+            cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
+
+        if frame_num >= end_frame:
+            break
+
+        # Show
+        cv2.imshow('test', image)
+        cv2.waitKey(33)     # About 30 fps
+        writer.write(image)
+    pbar.close()
+    if writer is not None:
+        writer.release()
+        print('Finished! Output saved under {}'.format(output_path))
+    else:
+        print('Input video file was empty')
+
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(
@@ -243,16 +367,19 @@ if __name__ == '__main__':
                 args.video_path = join(video_path, video)
                 test_full_image_network(**vars(args))
     else:
-        print('Reading from S3 remotely...')
-        s3 = boto3.resource('s3')
-        # bucket = s3.Bucket('raw-videos-gleonato/datasets/dfdc/deepfake-detection-challenge/test_videos/')
-        bucket = s3.Bucket(s3_bucket)
+        test_full_image_network(**vars(args))
 
-        for obj in bucket.objects.all():
-            key = obj.key
-            print(key)
-            body = obj.get()['Body'].read()
-            if key.endswith('.mp4') or key.endswith('.avi'):
-                test_full_image_network(**vars(args))
-            # print(body)
-            break
+
+        # print('Reading from S3 remotely...')
+        # s3 = boto3.resource('s3')
+        # # bucket = s3.Bucket('raw-videos-gleonato/datasets/dfdc/deepfake-detection-challenge/test_videos/')
+        # bucket = s3.Bucket(s3_bucket)
+        #
+        # for obj in bucket.objects.all():
+        #     key = obj.key
+        #     print(key)
+        #     body = obj.get()['Body'].read()
+        #     if key.endswith('.mp4') or key.endswith('.avi'):
+        #         test_full_image_network(**vars(args))
+        #     # print(body)
+        #     break
