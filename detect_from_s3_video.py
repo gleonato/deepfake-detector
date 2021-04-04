@@ -345,7 +345,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
 if __name__ == '__main__':
     p = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('--video_path', '-i', type=str)
+    # p.add_argument('--video_path', '-i', type=str)
     p.add_argument('--s3_bucket', '-s3', type=str)
     p.add_argument('--model_path', '-mi', type=str, default=None)
     p.add_argument('--output_path', '-o', type=str,
