@@ -234,7 +234,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     print('Reading from S3 remotely...')
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(s3_bucket)
-    reader = cv2.VideoCapture(s3.Object(bucket=s3_bucket,key='aassnaulhq.mp4'))
+    reader = cv2.VideoCapture(s3.Object(s3_bucket,'aassnaulhq.mp4'))
     # for obj in bucket.objects.all():
     #     key = obj.key
     #     print(key)
