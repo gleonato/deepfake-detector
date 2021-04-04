@@ -233,6 +233,7 @@ if __name__ == '__main__':
 
     s3_bucket = args.s3_bucket
     if s3_bucket is None:
+        print('Reading LOCAL video file...')
         video_path = args.video_path
         if video_path.endswith('.mp4') or video_path.endswith('.avi'):
             test_full_image_network(**vars(args))
@@ -242,6 +243,7 @@ if __name__ == '__main__':
                 args.video_path = join(video_path, video)
                 test_full_image_network(**vars(args))
     else:
+        print('Reading from S3 remotely...')
         s3 = boto3.resource('s3')
         # bucket = s3.Bucket('raw-videos-gleonato/datasets/dfdc/deepfake-detection-challenge/test_videos/')
         bucket = s3.Bucket(s3_bucket)
