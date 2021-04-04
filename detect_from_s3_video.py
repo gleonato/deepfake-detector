@@ -367,7 +367,7 @@ if __name__ == '__main__':
                 args.video_path = join(video_path, video)
                 test_full_image_network(**vars(args))
     else:
-        test_full_image_network(**vars(args))
+        test_full_image_network2(**vars(args))
 
 
         # print('Reading from S3 remotely...')
