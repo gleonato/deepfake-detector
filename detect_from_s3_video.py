@@ -246,6 +246,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
 
     # Read and write
     reader = cv2.VideoCapture(key)
+    print(reader)
 
     video_fn = key
     os.makedirs(output_path, exist_ok=True)
