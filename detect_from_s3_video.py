@@ -238,7 +238,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
         key = obj.key
         print(key)
         # body = obj.get()['Body'].read()
-        body = obj.download_file(key)
+        obj.download_file(key)
         break
         # print(body)
 
@@ -246,7 +246,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     print('Starting: {}'.format(key))
 
     # Read and write
-    reader = cv2.VideoCapture(body)
+    reader = cv2.VideoCapture(key)
     print(reader)
 
     video_fn = key
