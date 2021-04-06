@@ -238,7 +238,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
         key = obj.key
         print(key)
         # body = obj.get()['Body'].read()
-        s3.meta.client.download_file(bucket,key,str(key))
+        s3.meta.client.download_file(s3_bucket,str(key),str(key))
         break
         # print(body)
 
