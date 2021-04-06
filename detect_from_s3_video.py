@@ -249,7 +249,8 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     reader = cv2.VideoCapture(key)
     print(reader)
 
-    video_fn = video_path.split('/')[-1].split('.')[0]+'.avi'
+    # video_fn = video_path.split('/')[-1].split('.')[0]+'.avi'
+    video_fn = key+'.avi'
     os.makedirs(output_path, exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     fps = reader.get(cv2.CAP_PROP_FPS)
