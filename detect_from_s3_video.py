@@ -1,4 +1,7 @@
 """
+Gustavo commando to execute:  python detect_from_s3_video.py -s3 raw-videos-gleonato -m /home/leonato/Projects/FaceForensics/classification/models/
+
+
 Evaluates a folder of video files or a single file with a xception binary
 classification network.
 
