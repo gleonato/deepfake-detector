@@ -231,6 +231,7 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
     :param cuda: enable cuda
     :return:
     """
+
     print('Reading from S3 remotely...')
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(s3_bucket)
@@ -336,8 +337,8 @@ def test_full_image_network2(s3_bucket, model_path, output_path,
             break
 
         # Show
-        cv2.imshow('test', image)
-        cv2.waitKey(33)     # About 30 fps
+        # cv2.imshow('test', image)
+        # cv2.waitKey(33)     # About 30 fps
         writer.write(image)
     pbar.close()
     if writer is not None:
